@@ -2,8 +2,6 @@ module github.com/adamelfsborg-code/food/user
 
 go 1.22.0
 
-require github.com/joho/godotenv v1.5.1
-
 require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-chi/chi/v5 v5.0.12 // indirect
@@ -31,4 +29,5 @@ require (
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	mellium.im/sasl v0.3.1 // indirect
+	github.com/joho/godotenv v1.5.1
 )
