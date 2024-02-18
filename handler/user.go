@@ -22,26 +22,35 @@ func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		fmt.Println("Failed to decode json: ", err)
-		http.Error(w, "Failed to decode json", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	user, err := data.NewUserDto(body.Name, body.Password)
 	if err != nil {
 		fmt.Println("Failed to create user: ", err)
-		http.Error(w, "Failed to create user", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	err = u.Data.Register(*user)
 	if err != nil {
+
 		fmt.Println("Failed to create user: ", err)
-		http.Error(w, "Failed to create user", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	jsonBytes, err := json.Marshal(map[string]string{"message": "User registerd"})
+	if err != nil {
+		fmt.Println("Failed to decode json: ", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Registerd"))
+	w.Write(jsonBytes)
 }
 
 func (u *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -53,14 +62,14 @@ func (u *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		fmt.Println("Failed to decode json: ", err)
-		http.Error(w, "Failed to decode json", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	token, err := u.Data.Login(body.Name, body.Password)
 	if err != nil {
 		fmt.Println("Failed to login user: ", err)
-		http.Error(w, fmt.Sprintf("Failed to login user: %v", err), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -68,7 +77,7 @@ func (u *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		fmt.Println("Failed to encode token: ", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -83,21 +92,21 @@ func (u *UserHandler) Ping(w http.ResponseWriter, r *http.Request) {
 	userId, err := uuid.Parse(headerId)
 	if err != nil {
 		fmt.Println("Failed to parse id: ", err)
-		http.Error(w, "Failed to parse id", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	user, err := u.Data.Ping(userId)
 	if err != nil {
 		fmt.Println("Failed to extract user details: ", err)
-		http.Error(w, "Failed to extract user details", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	jsonResponse, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println("Failed to encode user: ", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

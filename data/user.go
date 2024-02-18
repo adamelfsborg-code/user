@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/adamelfsborg-code/food/user/lib"
+	"github.com/go-pg/pg/v10"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 
@@ -13,7 +14,7 @@ import (
 
 //lint:ignore U1000 Ignore unused function temporarily for debugging
 type UserDto struct {
-	tableName struct{}  `pg:"app_user,alias:au"`
+	tableName struct{}  `pg:"user.app_user,alias:au"`
 	Id        uuid.UUID `json:"id" db:"id"`
 	Timestamp time.Time `json:"timestamp" db:"timestamp"`
 	Name      string    `json:"name" db:"name" validate:"max=20,min=3"`
@@ -22,7 +23,7 @@ type UserDto struct {
 
 //lint:ignore U1000 Ignore unused function temporarily for debugging
 type UserTable struct {
-	tableName struct{}  `pg:"app_user,alias:au"`
+	tableName struct{}  `pg:"user.app_user,alias:au"`
 	Id        uuid.UUID `json:"id" db:"id"`
 	Timestamp time.Time `json:"timestamp" db:"timestamp"`
 	Name      string    `json:"name" db:"name" validate:"max=20,min=3"`
@@ -52,6 +53,12 @@ func NewUserDto(name, password string) (*UserDto, error) {
 
 func (d *DataConn) Register(user UserDto) error {
 	_, err := d.DB.Model(&user).Insert()
+
+	pgErr, ok := err.(pg.Error)
+	if ok && pgErr.IntegrityViolation() {
+		return fmt.Errorf("name already exists")
+	}
+
 	return err
 }
 
